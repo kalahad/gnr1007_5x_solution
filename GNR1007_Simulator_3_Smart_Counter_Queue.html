@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GNR1007 Simulator 3 — คิวเทพเทศบาล</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#16306C;--deep:#1E3C86;--ice:#CADCFC;--ink:#1B1B1F;--mute:#5A6480;
+--acc:#B8453A;--panel:#EDEFF4;--slot:#FFFFFF;--line:#C6CCDA}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans Thai','Sarabun','Leelawadee UI',Tahoma,sans-serif;background:#DDE2EC;color:var(--ink);
+line-height:1.55;padding:18px 12px}
+.wrap{max-width:1140px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;
+box-shadow:0 10px 34px rgba(22,48,108,.18)}
+.top{background:linear-gradient(135deg,var(--navy),var(--deep));color:#fff;padding:16px 24px;display:flex;
+align-items:center;gap:14px;flex-wrap:wrap}
+.top .t{font-size:20px;font-weight:800}
+.top .s{font-size:12.5px;color:var(--ice)}
+.pill{background:var(--acc);color:#12172B;font-weight:800;font-size:11.5px;padding:4px 12px;border-radius:99px}
+.led{width:12px;height:12px;border-radius:50%;background:#3A4A6B;box-shadow:inset 0 0 3px rgba(0,0,0,.6)}
+.led.on{background:#3BE07A;box-shadow:0 0 9px #3BE07A}
+.bar{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12.5px}
+.panel{background:var(--panel);padding:18px;display:grid;grid-template-columns:340px 1fr;gap:16px}
+.box{background:var(--slot);border:1px solid var(--line);border-radius:10px;padding:14px}
+.box h3{font-size:13px;color:var(--navy);font-weight:800;margin-bottom:12px;letter-spacing:.3px;
+border-bottom:1px solid #E7EAF2;padding-bottom:8px}
+.ctl{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.ctl label{font-size:12.5px;width:104px;color:var(--mute);flex:0 0 auto}
+.ctl input[type=range]{flex:1;accent-color:var(--navy)}
+.ctl .v{font-family:Consolas,monospace;font-size:12.5px;font-weight:700;color:var(--navy);
+background:#F2F5FC;border:1px solid #DCE3F1;border-radius:5px;padding:2px 8px;min-width:58px;text-align:right}
+.ctl input[type=number],.ctl select{font-family:inherit;font-size:12.5px;padding:4px 7px;border:1px solid var(--line);
+border-radius:5px;width:88px;background:#fff}
+.btns{display:flex;gap:8px;margin-top:12px}
+button{font-family:inherit;font-size:13px;font-weight:700;border:none;border-radius:7px;padding:9px 16px;cursor:pointer}
+.run{background:#1F9D55;color:#fff}.run:hover{background:#188047}
+.stop{background:#C0392B;color:#fff}.stop:hover{background:#9C2D22}
+.rst{background:#5A6480;color:#fff}.rst:hover{background:#454E66}
+.term{background:#0F1F47;color:#D6E2FF;border-radius:10px;padding:14px 16px;font-family:Consolas,'Courier New',monospace;
+font-size:12.5px;line-height:1.7;white-space:pre;overflow-x:auto;min-height:150px}
+.termbar{display:flex;gap:6px;margin-bottom:10px}.termbar i{width:10px;height:10px;border-radius:50%;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.big{font-family:Consolas,monospace;font-size:34px;font-weight:800;color:var(--navy);letter-spacing:-.5px}
+.cap{font-size:11.5px;color:var(--mute)}
+.stat{background:#F7F9FE;border:1px solid #E1E7F3;border-radius:9px;padding:10px 12px}
+.lamp{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:6px}
+.lamp .d{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:var(--ice);color:var(--navy);padding:6px 9px;text-align:left;font-size:11.5px}
+td{padding:5px 9px;border-bottom:1px solid #EEF1F8;font-family:Consolas,monospace}
+.code{background:#0F1F47;color:#D6E2FF;border-radius:10px;padding:14px 16px;font-family:Consolas,monospace;
+font-size:12px;line-height:1.65;white-space:pre;overflow-x:auto}
+.hl{background:rgba(201,162,39,.28);border-radius:3px}
+.note{font-size:12.5px;color:var(--mute);margin-top:10px}
+.foot{background:var(--navy);color:#9FB2DC;padding:14px 24px;font-size:12px}
+.foot b{color:#fff}
+@media(max-width:900px){.panel{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
+</style></head><body>
+<div class="wrap">
+  <div class="top">
+    <span class="pill">GNR 1007 · SIMULATOR 3</span>
+    <div><div class="t">คิวเทพเทศบาล</div><div class="s">Smart Counter Queue · จำลองการทำงานของ G3_counter_queue.c</div></div>
+    <div class="bar"><span class="led" id="led"></span><span id="status">STOPPED</span></div>
+  </div>
+  <div class="panel">
+    <div>
+      <div class="box"><h3>แผงควบคุม — ใส่ค่าอินพุต</h3><div class='ctl'><label>คิวที่ 1</label><select id='c0'><option value='1' selected>1 ขออนุญาต (5 น.)</option><option value='2'>2 ชำระภาษี (3 น.)</option><option value='3'>3 ร้องเรียน (10 น.)</option><option value='4'>4 สอบถาม (2 น.)</option></select></div><div class='ctl'><label>คิวที่ 2</label><select id='c1'><option value='1'>1 ขออนุญาต (5 น.)</option><option value='2' selected>2 ชำระภาษี (3 น.)</option><option value='3'>3 ร้องเรียน (10 น.)</option><option value='4'>4 สอบถาม (2 น.)</option></select></div><div class='ctl'><label>คิวที่ 3</label><select id='c2'><option value='1'>1 ขออนุญาต (5 น.)</option><option value='2'>2 ชำระภาษี (3 น.)</option><option value='3' selected>3 ร้องเรียน (10 น.)</option><option value='4'>4 สอบถาม (2 น.)</option></select></div><div class='ctl'><label>คิวที่ 4</label><select id='c3'><option value='1'>1 ขออนุญาต (5 น.)</option><option value='2' selected>2 ชำระภาษี (3 น.)</option><option value='3'>3 ร้องเรียน (10 น.)</option><option value='4'>4 สอบถาม (2 น.)</option></select></div><div class='ctl'><label>คิวที่ 5</label><select id='c4'><option value='1'>1 ขออนุญาต (5 น.)</option><option value='2'>2 ชำระภาษี (3 น.)</option><option value='3'>3 ร้องเรียน (10 น.)</option><option value='4' selected>4 สอบถาม (2 น.)</option></select></div><div class='ctl'><label>คิวที่ 6</label><select id='c5'><option value='1' selected>1 ขออนุญาต (5 น.)</option><option value='2'>2 ชำระภาษี (3 น.)</option><option value='3'>3 ร้องเรียน (10 น.)</option><option value='4'>4 สอบถาม (2 น.)</option></select></div><div class='ctl'><label>คิวที่ 7</label><select id='c6'><option value='1'>1 ขออนุญาต (5 น.)</option><option value='2'>2 ชำระภาษี (3 น.)</option><option value='3' selected>3 ร้องเรียน (10 น.)</option><option value='4'>4 สอบถาม (2 น.)</option></select></div><div class='ctl'><label>คิวที่ 8</label><select id='c7'><option value='1'>1 ขออนุญาต (5 น.)</option><option value='2' selected>2 ชำระภาษี (3 น.)</option><option value='3'>3 ร้องเรียน (10 น.)</option><option value='4'>4 สอบถาม (2 น.)</option></select></div>
+        <div class="btns">
+          <button class="run" onclick="runSim()">RUN</button>
+          <button class="stop" onclick="stopSim()">STOP</button>
+          <button class="rst" onclick="resetSim()">RESET</button>
+        </div>
+        <div class="note">ปรับค่าแล้วกด RUN โปรแกรมจะคำนวณด้วยตรรกะเดียวกับไฟล์ G3_counter_queue.c ทุกบรรทัด</div>
+      </div>
+    </div>
+    <div>
+      <div class="box" style="margin-bottom:16px"><h3>หน้าปัดแสดงผล</h3>
+ <div class="two" style="grid-template-columns:1fr 1fr 1fr">
+   <div class="stat" style="text-align:center">
+        <div class="cap">เคาน์เตอร์ 1</div>
+        <svg viewBox="0 0 60 120" style="height:120px"><rect x="18" y="10" width="24" height="100" fill="#E3E8F3" rx="5"/>
+        <rect id="g3b1" x="18" y="110" width="24" height="0" fill="#B8453A" rx="5"/></svg>
+        <div style="font-family:Consolas;font-weight:800;color:#16306C" id="g3v1">0 นาที</div></div><div class="stat" style="text-align:center">
+        <div class="cap">เคาน์เตอร์ 2</div>
+        <svg viewBox="0 0 60 120" style="height:120px"><rect x="18" y="10" width="24" height="100" fill="#E3E8F3" rx="5"/>
+        <rect id="g3b2" x="18" y="110" width="24" height="0" fill="#B8453A" rx="5"/></svg>
+        <div style="font-family:Consolas;font-weight:800;color:#16306C" id="g3v2">0 นาที</div></div><div class="stat" style="text-align:center">
+        <div class="cap">เคาน์เตอร์ 3</div>
+        <svg viewBox="0 0 60 120" style="height:120px"><rect x="18" y="10" width="24" height="100" fill="#E3E8F3" rx="5"/>
+        <rect id="g3b3" x="18" y="110" width="24" height="0" fill="#B8453A" rx="5"/></svg>
+        <div style="font-family:Consolas;font-weight:800;color:#16306C" id="g3v3">0 นาที</div></div>
+ </div>
+ <div class="stat" style="margin-top:10px"><div class="cap">เวลารวมทั้งวัน</div><div class="big" id="g3clock">0 นาที</div></div>
+ <div class="box" style="margin-top:10px;padding:0;border:none"><table id="g3tab"></table></div></div>
+      <div class="box"><h3>หน้าจอผลลัพธ์ — สิ่งที่ printf พิมพ์ออกมาจริง</h3>
+        <div class="term"><div class="termbar"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></div><span id="out">กด RUN เพื่อเริ่มจำลอง</span></div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:18px;background:var(--panel);border-top:1px solid var(--line)">
+    <div class="box"><h3>โค้ด C ที่กำลังทำงานอยู่เบื้องหลัง</h3>
+      <div class="code">int waitTime(int type) {
+    int t;
+    switch (type) {
+        case 1: t = 5;  break;
+        case 2: t = 3;  break;
+        case 3: t = 10; break;
+        <span class="hl">default: t = 2; break;</span>   /* ลืม break = ไหลทะลุ */
+    }
+    return t;
+}
+for (i = 0; i &lt; 8; i++) {
+    <span class="hl">counter = i % 3 + 1;</span>          /* หมุนเวร 1-2-3 */
+    t = waitTime(type[i]);  clock = clock + t;
+}</div>
+      <div class="note">แดชบอร์ดนี้ไม่ได้คำนวณแบบหลวม ๆ แต่จำลองพฤติกรรมของภาษา C ทุกจุด ทั้งการตัดเศษของ int การปัดของ float 4 ไบต์ และการปัดเศษของ printf</div>
+    </div>
+  </div>
+  <div class="foot"><b>ที่มาของตรรกะ</b> GNR1007_Project_Solutions/G3_counter_queue.c &nbsp;|&nbsp;
+  ผศ.ดร.กุลวลัญช์ วรุณสิน · สาขาวิศวกรรมคอมพิวเตอร์ มหาวิทยาลัยรามคำแหง</div>
+</div>
+<script>// C-semantics helpers
+const idiv = (a,b) => Math.trunc(a/b);
+const imod = (a,b) => a % b;          // JS % truncates toward zero, same as C99
+const f32  = x => Math.fround(x);
+const fmt2 = x => {                      // emulate printf %.2f (round-half-to-even on exact value)
+  const v = f32(x); if (!isFinite(v)) return String(v);
+  const neg = v < 0, s = Math.abs(v).toFixed(20);
+  const dot = s.indexOf('.'), digits = s.replace('.','');
+  const keep = dot + 2;                  // integer digits + 2 decimals
+  let head = digits.slice(0, keep), tail = digits.slice(keep);
+  let up;
+  const first = tail[0];
+  if (first > '5') up = true;
+  else if (first < '5') up = false;
+  else up = /[1-9]/.test(tail.slice(1)) ? true : (parseInt(head[head.length-1],10) % 2 === 1);
+  let n = (BigInt(head) + (up ? 1n : 0n)).toString().padStart(3,'0');
+  const out = n.slice(0, n.length-2) + '.' + n.slice(n.length-2);
+  return (neg && parseFloat(out) !== 0 ? '-' : '') + out;
+};
+
+const G1 = s => {
+  let total = 0; for (let i=0;i<6;i++) total = total + s[i];
+  const percent = f32(f32(f32(total)/30)*100);
+  let grade; if (percent>=80) grade='A'; else if (percent>=70) grade='B';
+  else if (percent>=60) grade='C'; else grade='F';
+  return {total, percent, grade};
+};
+
+const G2 = (ground, design) => {
+  let cut=0, fill=0, nCut=0, nFill=0, nFlat=0; const rows=[];
+  for (let i=0;i<ground.length;i++){
+    const d = ground[i]-design; let tag;
+    if (d>0){cut+=d;nCut++;tag='ตัดดิน';}
+    else if (d<0){fill-=d;nFill++;tag='ถมดิน';}
+    else {nFlat++;tag='พอดี';}
+    rows.push({i:i+1,g:ground[i],d,tag});
+  }
+  return {cut, fill, nCut, nFill, nFlat, net:cut-fill, rows};
+};
+
+const waitTime = t => { switch(t){case 1:return 5;case 2:return 3;case 3:return 10;default:return 2;} };
+const G3 = type => {
+  let clock=0, l=[0,0,0]; const rows=[];
+  for (let i=0;i<type.length;i++){
+    const counter = imod(i,3)+1, t = waitTime(type[i]);
+    clock += t; l[counter-1]+=t;
+    rows.push({i:i+1,type:type[i],counter,t,clock});
+  }
+  return {load1:l[0],load2:l[1],load3:l[2],clock,rows};
+};
+
+const G4 = (qty, price) => {
+  let sub=0; const rows=[];
+  for (let i=0;i<qty.length;i++){
+    const line = f32(f32(qty[i])*f32(price[i]));
+    sub = f32(sub + line);
+    rows.push({i:i+1,q:qty[i],p:f32(price[i]),line});
+  }
+  const total = f32(sub*f32(1.07));
+  return {sub, vat:f32(total-sub), total, over: total>100000, rows};
+};
+
+const level = d => (d<0)?3:(d<=7)?2:(d<=30)?1:0;
+const G5 = left => {
+  let n=[0,0,0,0]; const rows=[];
+  const names=['ปกติ','เฝ้าระวัง','วิกฤต เร่งด่วน','เลยกำหนดแล้ว'];
+  for (let i=0;i<left.length;i++){
+    const lv=level(left[i]), w=idiv(left[i],7), d=imod(left[i],7);
+    n[lv]++; rows.push({i:i+1,left:left[i],w,d,lv,tag:names[lv]});
+  }
+  return {nGreen:n[0],nYellow:n[1],nOrange:n[2],nRed:n[3],rows,
+          order: n[3]>0?'เรียกประชุมด่วนภายในสัปดาห์นี้':(n[2]>0?'ติดตามรายวันจนกว่าจะส่งมอบ':'ติดตามตามรอบปกติ')};
+};
+
+
+
+function readIn(){let a=[];for(let i=0;i<8;i++)a.push(parseInt(document.getElementById('c'+i).value));return a;}
+function runSim(){setLed(true);
+ const t=readIn(), r=G3(t), mx=Math.max(r.load1,r.load2,r.load3,1);
+ [r.load1,r.load2,r.load3].forEach(function(v,i){
+   const h=Math.round(100*v/mx);
+   const b=document.getElementById('g3b'+(i+1));
+   b.setAttribute('height',h); b.setAttribute('y',110-h);
+   b.setAttribute('fill', v===mx ? '#B8453A' : '#16306C');
+   document.getElementById('g3v'+(i+1)).textContent=v+' นาที';});
+ document.getElementById('g3clock').textContent=r.clock+' นาที';
+ let tb='<tr><th>คิว</th><th>ประเภท</th><th>เคาน์เตอร์</th><th>ใช้เวลา</th><th>สะสม</th></tr>';
+ r.rows.forEach(function(x){tb+='<tr><td>'+x.i+'</td><td>'+x.type+'</td><td>'+x.counter+'</td><td>'+x.t+'</td><td>'+x.clock+'</td></tr>';});
+ document.getElementById('g3tab').innerHTML=tb;
+ let o='=== ระบบจัดคิวเคาน์เตอร์บริการประชาชน ===\nคิวที่  ประเภท  เคาน์เตอร์  ใช้เวลา  เวลาสะสม\n';
+ r.rows.forEach(function(x){o+='  '+String(x.i).padStart(2)+'       '+x.type+'          '+x.counter
+  +'         '+String(x.t).padStart(3)+'       '+String(x.clock).padStart(4)+'\n';});
+ o+='----------------------------------------------\n';
+ o+='ภาระงานเคาน์เตอร์ 1 : '+r.load1+' นาที\nภาระงานเคาน์เตอร์ 2 : '+r.load2+' นาที\n';
+ o+='ภาระงานเคาน์เตอร์ 3 : '+r.load3+' นาที\nเวลารวมทั้งวัน       : '+r.clock+' นาที';
+ document.getElementById('out').textContent=o;}
+function resetSim(){const d=[1,2,3,2,4,1,3,2];for(let i=0;i<8;i++)document.getElementById('c'+i).value=d[i];runSim();}
+resetSim(); stopSim();
+function setLed(on){document.getElementById('led').className='led'+(on?' on':'');
+document.getElementById('status').textContent=on?'RUNNING':'STOPPED';}
+function stopSim(){setLed(false);}
+</script></body></html>
