@@ -51,6 +51,15 @@ td{padding:5px 9px;border-bottom:1px solid #EEF1F8;font-family:Consolas,monospac
 font-size:12px;line-height:1.65;white-space:pre;overflow-x:auto}
 .hl{background:rgba(201,162,39,.28);border-radius:3px}
 .note{font-size:12.5px;color:var(--mute);margin-top:10px}
+.ed{width:100%;min-height:300px;font-family:Consolas,'Courier New',monospace;font-size:12.5px;
+line-height:1.6;background:#0F1F47;color:#D6E2FF;border:1px solid #2C4C9E;border-radius:10px;padding:14px 16px;
+resize:vertical;tab-size:4;white-space:pre;overflow:auto}
+.ed:focus{outline:2px solid var(--acc);outline-offset:1px}
+.verdict{border-radius:10px;padding:12px 16px;font-size:13.5px;font-weight:700;margin-top:12px}
+.v-ok{background:#E7F7EE;color:#14663B;border:1px solid #B7E4CB}
+.v-no{background:#FDF0EF;color:#A32020;border:1px solid #F3D5D2}
+.v-err{background:#FFF6E0;color:#8A6E12;border:1px solid #EBDCA8}
+.diff{font-family:Consolas,monospace;font-size:12px;margin-top:8px;font-weight:400;white-space:pre-wrap}
 .foot{background:var(--navy);color:#9FB2DC;padding:14px 24px;font-size:12px}
 .foot b{color:#fff}
 @media(max-width:900px){.panel{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
@@ -65,11 +74,11 @@ font-size:12px;line-height:1.65;white-space:pre;overflow-x:auto}
     <div>
       <div class="box"><h3>แผงควบคุม — ใส่ค่าอินพุต</h3><div class='ctl'><label>สัญญาที่ 1</label><input type='range' id='c0' min='-30' max='120' step='1' value='45' oninput="document.getElementById('v0').textContent=this.value"><span class='v' id='v0'>45</span></div><div class='ctl'><label>สัญญาที่ 2</label><input type='range' id='c1' min='-30' max='120' step='1' value='12' oninput="document.getElementById('v1').textContent=this.value"><span class='v' id='v1'>12</span></div><div class='ctl'><label>สัญญาที่ 3</label><input type='range' id='c2' min='-30' max='120' step='1' value='3' oninput="document.getElementById('v2').textContent=this.value"><span class='v' id='v2'>3</span></div><div class='ctl'><label>สัญญาที่ 4</label><input type='range' id='c3' min='-30' max='120' step='1' value='-5' oninput="document.getElementById('v3').textContent=this.value"><span class='v' id='v3'>-5</span></div><div class='ctl'><label>สัญญาที่ 5</label><input type='range' id='c4' min='-30' max='120' step='1' value='30' oninput="document.getElementById('v4').textContent=this.value"><span class='v' id='v4'>30</span></div><div class='ctl'><label>สัญญาที่ 6</label><input type='range' id='c5' min='-30' max='120' step='1' value='60' oninput="document.getElementById('v5').textContent=this.value"><span class='v' id='v5'>60</span></div><div class='ctl'><label>สัญญาที่ 7</label><input type='range' id='c6' min='-30' max='120' step='1' value='7' oninput="document.getElementById('v6').textContent=this.value"><span class='v' id='v6'>7</span></div>
         <div class="btns">
-          <button class="run" onclick="runSim()">RUN</button>
+          <button class="run" onclick="runAll()">RUN</button>
           <button class="stop" onclick="stopSim()">STOP</button>
           <button class="rst" onclick="resetSim()">RESET</button>
         </div>
-        <div class="note">ปรับค่าแล้วกด RUN โปรแกรมจะคำนวณด้วยตรรกะเดียวกับไฟล์ G5_deadline_tracker.c ทุกบรรทัด</div>
+        <div class="note">ปรับค่าแล้วกด RUN ระบบจะรันโค้ดในกล่องด้านล่างด้วยค่าชุดนี้ทันที</div>
       </div>
     </div>
     <div>
@@ -89,22 +98,557 @@ font-size:12px;line-height:1.65;white-space:pre;overflow-x:auto}
     </div>
   </div>
   <div style="padding:18px;background:var(--panel);border-top:1px solid var(--line)">
-    <div class="box"><h3>โค้ด C ที่กำลังทำงานอยู่เบื้องหลัง</h3>
-      <div class="code">int level(int days) {
-    if (days &lt; 0)        return 3;   /* เลยกำหนด */
-    else if (days &lt;= 7)  return 2;   /* วิกฤต */
-    else if (days &lt;= 30) return 1;   /* เฝ้าระวัง */
-    else                 return 0;   /* ปกติ */
-}
-<span class="hl">w = left[i] / 7;   d = left[i] % 7;</span>
-/* ระวัง: -5 / 7 = 0 และ -5 % 7 = -5 เพราะ % ใน C ใช้เครื่องหมายตามตัวตั้ง */</div>
-      <div class="note">แดชบอร์ดนี้ไม่ได้คำนวณแบบหลวม ๆ แต่จำลองพฤติกรรมของภาษา C ทุกจุด ทั้งการตัดเศษของ int การปัดของ float 4 ไบต์ และการปัดเศษของ printf</div>
+    <div class="box"><h3>โค้ด C ที่ทำงานอยู่เบื้องหลัง — แก้ไขหรือวางโค้ดของคุณตรงนี้ได้เลย</h3>
+      <textarea class="ed" id="src" spellcheck="false"></textarea>
+      <div class="btns">
+        <button class="run" onclick="compileRun()">คอมไพล์และรันโค้ดนี้</button>
+        <button class="rst" onclick="restoreCode()">คืนค่าโค้ดต้นฉบับ</button>
+      </div>
+      <div id="verdict" class="verdict v-err">ยังไม่ได้กดคอมไพล์</div>
+      <div class="note">ค่าที่ปรับจากแผงควบคุมด้านบนจะถูกส่งเข้าตัวแปร <b id="injname">-</b> ให้อัตโนมัติ
+      จึงไม่ต้องแก้ตัวเลขในโค้ดเอง หากเปลี่ยนชื่อตัวแปร ระบบจะรันตามค่าที่เขียนไว้ในโค้ดแทน<br>
+      ตัวแปลภาษาซีนี้จำลองพฤติกรรมจริงของ C ทั้งการตัดเศษของ int การวนรอบของ char การปัดของ float 4 ไบต์
+      การปัดเศษของ printf และตรวจจับการเข้าถึงอาร์เรย์เกินขอบเขตกับลูปไม่รู้จบ</div>
     </div>
   </div>
   <div class="foot"><b>ที่มาของตรรกะ</b> GNR1007_Project_Solutions/G5_deadline_tracker.c &nbsp;|&nbsp;
-  ผศ.ดร.กุลวลัญช์ วรุณสิน · สาขาวิศวกรรมคอมพิวเตอร์ มหาวิทยาลัยรามคำแหง</div>
+  ผศ.ดร.กุลวลัญช์ วรุณสิน · สาขาวิศวกรรมคอมพิวเตอร์ มหาวิทยาลัยรามคำแหง<span style="display:block;margin-top:6px;font-size:.92em;opacity:.92">Simulator โปรเจกต์ 5 กลุ่ม GNR1007 v2.0 · <a href="https://kalahad.github.io/gnr1007/" style="color:inherit;text-decoration:underline;text-underline-offset:2px">ศูนย์รวมเครื่องมือ GNR1007</a></span></div>
 </div>
-<script>// C-semantics helpers
+<script>/* MiniC — ตัวแปลภาษาซีชุดย่อยสำหรับ GNR1007 (บทที่ 1-7a, 10)
+   รองรับ: int float double char void, อาร์เรย์ 1 มิติ, ฟังก์ชัน, if/else, switch,
+   for/while/do-while, break/continue/return, ++/--, cast, printf/puts
+   จำลองพฤติกรรมภาษา C: int 32 บิตตัดเศษ, char วนรอบ, float 4 ไบต์, printf ปัดแบบ half-to-even */
+(function(root){
+'use strict';
+
+/* ---------- Lexer ---------- */
+var KW = ['int','float','double','char','void','if','else','for','while','do','switch','case',
+          'default','break','continue','return','long','short','unsigned','signed','const'];
+function lex(src){
+  var t=[], i=0, line=1, n=src.length;
+  function err(m){ throw {line:line, msg:m}; }
+  while(i<n){
+    var c=src[i];
+    if(c==='\n'){ line++; i++; continue; }
+    if(c===' '||c==='\t'||c==='\r'){ i++; continue; }
+    if(c==='/'&&src[i+1]==='/'){ while(i<n&&src[i]!=='\n') i++; continue; }
+    if(c==='/'&&src[i+1]==='*'){ i+=2; while(i<n&&!(src[i]==='*'&&src[i+1]==='/')){ if(src[i]==='\n')line++; i++; } i+=2; continue; }
+    if(c==='#'){ while(i<n&&src[i]!=='\n') i++; continue; }
+    if(c==='"'){
+      var s='', j=i+1;
+      while(j<n&&src[j]!=='"'){
+        if(src[j]==='\\'){ s+=esc(src[j+1]); j+=2; } else { s+=src[j]; j++; }
+      }
+      if(j>=n) err('สตริงเปิดแล้วไม่ได้ปิดด้วยเครื่องหมาย "');
+      t.push({k:'str',v:s,line:line}); i=j+1; continue;
+    }
+    if(c==="'"){
+      var ch, j2=i+1;
+      if(src[j2]==='\\'){ ch=esc(src[j2+1]); j2+=2; } else { ch=src[j2]; j2++; }
+      if(src[j2]!=="'") err("อักขระใน ' ' ต้องมีตัวเดียว");
+      t.push({k:'num',v:ch.charCodeAt(0),isInt:true,line:line}); i=j2+1; continue;
+    }
+    if(/[0-9]/.test(c)||(c==='.'&&/[0-9]/.test(src[i+1]||''))){
+      var j3=i, dot=false;
+      while(j3<n&&(/[0-9]/.test(src[j3])||(src[j3]==='.'&&!dot))){ if(src[j3]==='.')dot=true; j3++; }
+      var txt=src.slice(i,j3), suf=false;
+      if(src[j3]==='f'||src[j3]==='F'){ suf=true; j3++; }
+      else if(src[j3]==='L'||src[j3]==='l'||src[j3]==='u'||src[j3]==='U'){ j3++; }
+      t.push({k:'num',v:parseFloat(txt),isInt:(!dot&&!suf),isF:suf,line:line}); i=j3; continue;
+    }
+    if(/[A-Za-z_]/.test(c)){
+      var j4=i; while(j4<n&&/[A-Za-z0-9_]/.test(src[j4])) j4++;
+      var w=src.slice(i,j4);
+      t.push({k:KW.indexOf(w)>=0?'kw':'id',v:w,line:line}); i=j4; continue;
+    }
+    var three=src.substr(i,3), two=src.substr(i,2);
+    if(['<<=','>>='].indexOf(three)>=0){ t.push({k:'op',v:three,line:line}); i+=3; continue; }
+    if(['==','!=','<=','>=','&&','||','++','--','+=','-=','*=','/=','%=','->','<<','>>'].indexOf(two)>=0){
+      t.push({k:'op',v:two,line:line}); i+=2; continue;
+    }
+    if('+-*/%=<>!&|^~?:;,(){}[]'.indexOf(c)>=0){ t.push({k:'op',v:c,line:line}); i++; continue; }
+    err('พบอักขระที่ไม่รู้จัก: '+c);
+  }
+  t.push({k:'eof',v:'',line:line});
+  return t;
+  function esc(e){ return {'n':'\n','t':'\t','r':'\r','0':'\0','\\':'\\','"':'"',"'":"'"}[e]!==undefined?
+    {'n':'\n','t':'\t','r':'\r','0':'\0','\\':'\\','"':'"',"'":"'"}[e]:e; }
+}
+
+/* ---------- Parser ---------- */
+function parse(tokens){
+  var p=0;
+  function tk(){ return tokens[p]; }
+  function at(k,v){ var x=tokens[p]; return x.k===k&&(v===undefined||x.v===v); }
+  function eat(k,v){ if(!at(k,v)) fail((v||k)); return tokens[p++]; }
+  function opt(k,v){ if(at(k,v)){ p++; return true; } return false; }
+  function fail(what){ throw {line:tokens[p].line, msg:'คาดว่าจะเจอ '+what+' แต่เจอ "'+(tokens[p].v||'จบไฟล์')+'"'}; }
+  var TYPES=['int','float','double','char','void'];
+  function isType(){
+    var i=p;
+    while(tokens[i].k==='kw'&&['const','unsigned','signed','short','long'].indexOf(tokens[i].v)>=0) i++;
+    return tokens[i].k==='kw'&&TYPES.indexOf(tokens[i].v)>=0;
+  }
+  function readType(){
+    while(at('kw','const')||at('kw','unsigned')||at('kw','signed')||at('kw','short')||at('kw','long')) p++;
+    var t=eat('kw').v;
+    while(at('kw','long')||at('kw','int')) p++;
+    return t;
+  }
+  function program(){
+    var decls=[];
+    while(!at('eof')){
+      if(!isType()) fail('ชนิดข้อมูล เช่น int หรือ float');
+      var line=tk().line, ty=readType(), name=eat('id').v;
+      if(at('op','(')){
+        p++; var params=[];
+        if(!at('op',')')){
+          do{
+            if(at('kw','void')&&tokens[p+1].k==='op'&&tokens[p+1].v===')'){ p++; break; }
+            var pt=readType(), pn=eat('id').v, arr=false;
+            if(opt('op','[')){ arr=true; if(!at('op',']')) expr(); eat('op',']'); }
+            params.push({type:pt,name:pn,isArr:arr});
+          }while(opt('op',','));
+        }
+        eat('op',')');
+        if(opt('op',';')) continue;              /* prototype */
+        var body=block();
+        decls.push({kind:'func',type:ty,name:name,params:params,body:body,line:line});
+      } else {
+        p--; /* rewind name */ tokens[p]={k:'id',v:name,line:line};
+        decls.push({kind:'gvar',decl:varDecl(ty,line)});
+      }
+    }
+    return decls;
+  }
+  function varDecl(ty,line){
+    var items=[];
+    do{
+      var name=eat('id').v, size=null, init=null, isArr=false;
+      if(opt('op','[')){ isArr=true; if(!at('op',']')) size=expr(); eat('op',']'); }
+      if(opt('op','=')){
+        if(at('op','{')){ p++; var list=[];
+          if(!at('op','}')) do{ list.push(expr()); }while(opt('op',','));
+          eat('op','}'); init={kind:'initlist',items:list};
+        } else init=expr();
+      }
+      items.push({name:name,size:size,init:init,isArr:isArr});
+    }while(opt('op',','));
+    eat('op',';');
+    return {kind:'decl',type:ty,items:items,line:line};
+  }
+  function block(){ var line=tk().line; eat('op','{'); var body=[];
+    while(!at('op','}')){ if(at('eof')) fail('}'); body.push(stmt()); } eat('op','}');
+    return {kind:'block',body:body,line:line};
+  }
+  function stmt(){
+    var line=tk().line;
+    if(at('op','{')) return block();
+    if(at('op',';')){ p++; return {kind:'empty',line:line}; }
+    if(isType()){ var ty=readType(); return varDecl(ty,line); }
+    if(at('kw','if')){ p++; eat('op','('); var c=expr(); eat('op',')');
+      var th=stmt(), el=null; if(at('kw','else')){ p++; el=stmt(); }
+      return {kind:'if',cond:c,then:th,els:el,line:line}; }
+    if(at('kw','while')){ p++; eat('op','('); var c2=expr(); eat('op',')');
+      return {kind:'while',cond:c2,body:stmt(),line:line}; }
+    if(at('kw','do')){ p++; var b=stmt(); eat('kw','while'); eat('op','('); var c3=expr(); eat('op',')'); eat('op',';');
+      return {kind:'dowhile',cond:c3,body:b,line:line}; }
+    if(at('kw','for')){ p++; eat('op','(');
+      var init=null;
+      if(at('op',';')) p++;
+      else if(isType()){ var t2=readType(); init=varDecl(t2,line); }
+      else { init={kind:'exprstmt',expr:expr(),line:line}; eat('op',';'); }
+      var cond=at('op',';')?null:expr(); eat('op',';');
+      var step=at('op',')')?null:expr(); eat('op',')');
+      return {kind:'for',init:init,cond:cond,step:step,body:stmt(),line:line}; }
+    if(at('kw','switch')){ p++; eat('op','('); var sx=expr(); eat('op',')'); eat('op','{');
+      var cases=[];
+      while(!at('op','}')){
+        if(at('kw','case')){ p++; var cv=expr(); eat('op',':'); cases.push({test:cv,body:[]}); }
+        else if(at('kw','default')){ p++; eat('op',':'); cases.push({test:null,body:[]}); }
+        else { if(!cases.length) fail('case หรือ default'); cases[cases.length-1].body.push(stmt()); }
+      }
+      eat('op','}');
+      return {kind:'switch',disc:sx,cases:cases,line:line}; }
+    if(at('kw','break')){ p++; eat('op',';'); return {kind:'break',line:line}; }
+    if(at('kw','continue')){ p++; eat('op',';'); return {kind:'continue',line:line}; }
+    if(at('kw','return')){ p++; var rv=at('op',';')?null:expr(); eat('op',';'); return {kind:'return',expr:rv,line:line}; }
+    var e=expr(); eat('op',';'); return {kind:'exprstmt',expr:e,line:line};
+  }
+  /* expressions */
+  function expr(){ return assign(); }
+  function assign(){
+    var left=ternary();
+    if(at('op','=')||at('op','+=')||at('op','-=')||at('op','*=')||at('op','/=')||at('op','%=')){
+      var op=tokens[p++].v, right=assign();
+      return {kind:'assign',op:op,target:left,value:right};
+    }
+    return left;
+  }
+  function ternary(){ var c=logor();
+    if(at('op','?')){ p++; var a=expr(); eat('op',':'); var b=ternary(); return {kind:'cond',cond:c,a:a,b:b}; }
+    return c; }
+  function bin(next,ops){ return function(){ var l=next();
+      while(tk().k==='op'&&ops.indexOf(tk().v)>=0){ var o=tokens[p++].v; l={kind:'bin',op:o,l:l,r:next()}; }
+      return l; }; }
+  var mul, add, rel, eq, and2, or2, logand, logor;
+  function unary(){
+    var line=tk().line;
+    if(at('op','-')){ p++; return {kind:'neg',e:unary()}; }
+    if(at('op','+')){ p++; return unary(); }
+    if(at('op','!')){ p++; return {kind:'not',e:unary()}; }
+    if(at('op','++')||at('op','--')){ var o=tokens[p++].v; return {kind:'pre',op:o,e:unary(),line:line}; }
+    if(at('op','(')&&tokens[p+1].k==='kw'&&['int','float','double','char'].indexOf(tokens[p+1].v)>=0
+       &&tokens[p+2].k==='op'&&tokens[p+2].v===')'){
+      p++; var ct=eat('kw').v; eat('op',')'); return {kind:'cast',to:ct,e:unary()};
+    }
+    return postfix();
+  }
+  function postfix(){
+    var e=primary();
+    for(;;){
+      if(at('op','[')){ p++; var ix=expr(); eat('op',']'); e={kind:'index',arr:e,index:ix}; }
+      else if(at('op','++')||at('op','--')){ var o=tokens[p++].v; e={kind:'post',op:o,e:e}; }
+      else break;
+    }
+    return e;
+  }
+  function primary(){
+    var t=tk(), line=t.line;
+    if(t.k==='num'){ p++; return {kind:'num',v:t.v,isInt:t.isInt,isF:t.isF}; }
+    if(t.k==='str'){ p++; return {kind:'str',v:t.v}; }
+    if(t.k==='id'){ p++;
+      if(at('op','(')){ p++; var args=[];
+        if(!at('op',')')) do{ args.push(expr()); }while(opt('op',','));
+        eat('op',')'); return {kind:'call',name:t.v,args:args,line:line}; }
+      return {kind:'var',name:t.v,line:line};
+    }
+    if(at('op','(')){ p++; var e=expr(); eat('op',')'); return e; }
+    fail('ค่าหรือชื่อตัวแปร');
+  }
+  mul=bin(unary,['*','/','%']); add=bin(mul,['+','-']); rel=bin(add,['<','<=','>','>=']);
+  eq=bin(rel,['==','!=']); and2=bin(eq,['&']); or2=bin(and2,['|']);
+  logand=bin(or2,['&&']); logor=bin(logand,['||']);
+  return program();
+}
+
+/* ---------- Runtime ---------- */
+var i32 = function(x){ return x|0; };
+var i8  = function(x){ x=x|0; x=x&255; return x>127?x-256:x; };
+var f32 = Math.fround;
+function trunc(x){ return x<0?Math.ceil(x):Math.floor(x); }
+
+function fmtF(v,prec,plus,space){
+  v=f32(v);
+  if(!isFinite(v)) return String(v);
+  var neg=v<0||(v===0&&1/v<0), a=Math.abs(v), s=a.toFixed(20);
+  var dot=s.indexOf('.'), digits=s.replace('.',''), keep=dot+prec;
+  var head=digits.slice(0,keep)||'0', tail=digits.slice(keep), up;
+  var first=tail[0];
+  if(first===undefined) up=false;
+  else if(first>'5') up=true;
+  else if(first<'5') up=false;
+  else up=/[1-9]/.test(tail.slice(1))?true:(parseInt(head[head.length-1]||'0',10)%2===1);
+  var n=(BigInt(head||'0')+(up?1n:0n)).toString().padStart(prec+1,'0');
+  var out=prec>0?(n.slice(0,n.length-prec)+'.'+n.slice(n.length-prec)):n;
+  return (neg?'-':(plus?'+':(space?' ':'')))+out;
+}
+function fmtI(v,plus,space){
+  v=Math.trunc(v); var s=String(Math.abs(v));
+  return (v<0?'-':(plus?'+':(space?' ':'')))+s;
+}
+function pad(s,width,left,zero){
+  if(!width||s.length>=width) return s;
+  var f=(zero&&!left)?'0':' ', p=new Array(width-s.length+1).join(f);
+  if(left) return s+new Array(width-s.length+1).join(' ');
+  if(zero&&(s[0]==='-'||s[0]==='+')) return s[0]+p+s.slice(1);
+  return p+s;
+}
+function doPrintf(fmt,args){
+  var out='', ai=0, i=0;
+  while(i<fmt.length){
+    var c=fmt[i];
+    if(c!=='%'){ out+=c; i++; continue; }
+    i++;
+    if(fmt[i]==='%'){ out+='%'; i++; continue; }
+    var left=false, zero=false, plus=false, space=false;
+    while('-0+ #'.indexOf(fmt[i])>=0){
+      if(fmt[i]==='-')left=true; else if(fmt[i]==='0')zero=true;
+      else if(fmt[i]==='+')plus=true; else if(fmt[i]===' ')space=true;
+      i++;
+    }
+    var w=''; while(/[0-9]/.test(fmt[i])) w+=fmt[i++];
+    var prec=null;
+    if(fmt[i]==='.'){ i++; var pr=''; while(/[0-9]/.test(fmt[i])) pr+=fmt[i++]; prec=pr===''?0:parseInt(pr,10); }
+    while('lhLz'.indexOf(fmt[i])>=0) i++;
+    var conv=fmt[i++], v=args[ai++], s;
+    if(conv==='d'||conv==='i') s=fmtI(v,plus,space);
+    else if(conv==='u') s=fmtI(Math.abs(Math.trunc(v)),plus,space);
+    else if(conv==='f'||conv==='F') s=fmtF(v,prec===null?6:prec,plus,space);
+    else if(conv==='c') s=String.fromCharCode(Math.trunc(v)&255);
+    else if(conv==='s') s=String(v);
+    else if(conv==='%'){ s='%'; ai--; }
+    else s='%'+conv, ai--;
+    out+=pad(s,parseInt(w||'0',10),left,zero);
+  }
+  return out;
+}
+
+function Interp(ast,opts){
+  opts=opts||{};
+  this.ast=ast; this.out=''; this.globals={}; this.funcs={};
+  this.inject=opts.inject||{}; this.injected=[]; this.steps=0; this.maxSteps=opts.maxSteps||4000000;
+}
+var BREAK={b:1}, CONT={c:1};
+Interp.prototype.write=function(s){ this.out+=s; if(this.out.length>200000) throw {line:0,msg:'พิมพ์ข้อความเกิน 200000 ตัวอักษร (อาจเกิดลูปไม่รู้จบ)'}; };
+Interp.prototype.conv=function(type,v){
+  if(type==='int') return i32(trunc(v));
+  if(type==='char') return i8(trunc(v));
+  if(type==='float') return f32(v);
+  return v;
+};
+Interp.prototype.run=function(){
+  var self=this;
+  this.ast.forEach(function(d){
+    if(d.kind==='func') self.funcs[d.name]=d;
+  });
+  var genv={vars:this.globals,parent:null};
+  this.ast.forEach(function(d){ if(d.kind==='gvar') self.exec(d.decl,genv); });
+  if(!this.funcs['main']) throw {line:0,msg:'ไม่พบฟังก์ชัน main'};
+  this.callFunc(this.funcs['main'],[]);
+  return this.out;
+};
+Interp.prototype.lookup=function(env,name,line){
+  var e=env;
+  while(e){ if(Object.prototype.hasOwnProperty.call(e.vars,name)) return e.vars; e=e.parent; }
+  throw {line:line,msg:'ไม่รู้จักตัวแปรหรือฟังก์ชันชื่อ '+name};
+};
+Interp.prototype.callFunc=function(f,args){
+  var env={vars:{},parent:{vars:this.globals,parent:null}};
+  for(var i=0;i<f.params.length;i++){
+    var pm=f.params[i], a=args[i];
+    env.vars[pm.name]= pm.isArr ? {arr:a&&a.arr?a.arr:a, type:pm.type}
+                                : {v:this.conv(pm.type, a&&a.arr?0:(a===undefined?0:a)), type:pm.type};
+  }
+  try{ this.exec(f.body,env); }
+  catch(e){ if(e&&e.ret!==undefined) return this.conv(f.type,e.ret); throw e; }
+  return 0;
+};
+Interp.prototype.exec=function(n,env){
+  if(++this.steps>this.maxSteps) throw {line:n.line||0,msg:'ทำงานเกิน '+this.maxSteps+' ขั้น น่าจะเกิดลูปไม่รู้จบ (Infinite Loop)'};
+  var self=this;
+  switch(n.kind){
+    case 'block': {
+      var e2={vars:{},parent:env};
+      for(var i=0;i<n.body.length;i++) this.exec(n.body[i],e2);
+      return;
+    }
+    case 'empty': return;
+    case 'decl': {
+      n.items.forEach(function(it){
+        if(it.isArr){
+          var size = it.size!==null && it.size!==undefined ? Math.trunc(self.eval(it.size,env)) : null;
+          var vals=[];
+          if(it.init&&it.init.kind==='initlist') vals=it.init.items.map(function(x){ return self.conv(n.type,self.eval(x,env)); });
+          if(Object.prototype.hasOwnProperty.call(self.inject,it.name)){
+            var inj=self.inject[it.name];
+            if(inj&&inj.length){ vals=inj.map(function(x){ return self.conv(n.type,x); }); self.injected.push(it.name); }
+          }
+          var len = size!==null ? size : vals.length;
+          var arr=new Array(len);
+          for(var k=0;k<len;k++) arr[k]= k<vals.length?vals[k]:self.conv(n.type,0);
+          env.vars[it.name]={arr:arr,type:n.type};
+        } else {
+          var v = it.init? self.eval(it.init,env) : 0;
+          if(Object.prototype.hasOwnProperty.call(self.inject,it.name)){
+            var iv=self.inject[it.name];
+            if(typeof iv==='number'){ v=iv; self.injected.push(it.name); }
+          }
+          env.vars[it.name]={v:self.conv(n.type,v),type:n.type};
+        }
+      });
+      return;
+    }
+    case 'exprstmt': this.eval(n.expr,env); return;
+    case 'if': if(this.truthy(this.eval(n.cond,env))) this.exec(n.then,env); else if(n.els) this.exec(n.els,env); return;
+    case 'while':
+      while(this.truthy(this.eval(n.cond,env))){
+        if(++this.steps>this.maxSteps) throw {line:n.line,msg:'ลูปทำงานเกินขีดจำกัด น่าจะเป็น Infinite Loop'};
+        try{ this.exec(n.body,env); }catch(e){ if(e===BREAK) break; if(e!==CONT) throw e; }
+      } return;
+    case 'dowhile':
+      do{
+        if(++this.steps>this.maxSteps) throw {line:n.line,msg:'ลูปทำงานเกินขีดจำกัด น่าจะเป็น Infinite Loop'};
+        try{ this.exec(n.body,env); }catch(e){ if(e===BREAK) break; if(e!==CONT) throw e; }
+      }while(this.truthy(this.eval(n.cond,env)));
+      return;
+    case 'for': {
+      var fe={vars:{},parent:env};
+      if(n.init) this.exec(n.init,fe);
+      for(;;){
+        if(n.cond&&!this.truthy(this.eval(n.cond,fe))) break;
+        if(++this.steps>this.maxSteps) throw {line:n.line,msg:'ลูปทำงานเกินขีดจำกัด น่าจะเป็น Infinite Loop'};
+        try{ this.exec(n.body,fe); }catch(e){ if(e===BREAK) break; if(e!==CONT) throw e; }
+        if(n.step) this.eval(n.step,fe);
+      }
+      return;
+    }
+    case 'switch': {
+      var d=this.eval(n.disc,env), idx=-1;
+      for(var ci=0;ci<n.cases.length;ci++){
+        if(n.cases[ci].test!==null && this.eval(n.cases[ci].test,env)===d){ idx=ci; break; }
+      }
+      if(idx<0) for(var cj=0;cj<n.cases.length;cj++) if(n.cases[cj].test===null){ idx=cj; break; }
+      if(idx<0) return;
+      var se={vars:{},parent:env};
+      try{
+        for(var q=idx;q<n.cases.length;q++)
+          for(var w2=0;w2<n.cases[q].body.length;w2++) this.exec(n.cases[q].body[w2],se);
+      }catch(e){ if(e!==BREAK) throw e; }
+      return;
+    }
+    case 'break': throw BREAK;
+    case 'continue': throw CONT;
+    case 'return': throw {ret: n.expr? this.eval(n.expr,env) : 0};
+    default: throw {line:n.line||0,msg:'คำสั่งชนิด '+n.kind+' ยังไม่รองรับ'};
+  }
+};
+Interp.prototype.truthy=function(v){ return v!==0; };
+Interp.prototype.lvalue=function(n,env){
+  var self=this;
+  if(n.kind==='var'){ var sc=this.lookup(env,n.name,n.line); var cell=sc[n.name];
+    return {get:function(){ return cell.v; }, set:function(x){ cell.v=self.conv(cell.type,x); }, type:cell.type}; }
+  if(n.kind==='index'){
+    if(n.arr.kind!=='var') throw {line:0,msg:'รองรับเฉพาะอาร์เรย์ 1 มิติแบบ a[i]'};
+    var sc2=this.lookup(env,n.arr.name,n.arr.line), cell2=sc2[n.arr.name];
+    if(!cell2.arr) throw {line:n.arr.line,msg:n.arr.name+' ไม่ใช่อาร์เรย์'};
+    var ix=Math.trunc(this.eval(n.index,env));
+    if(ix<0||ix>=cell2.arr.length) throw {line:n.arr.line,
+      msg:'เข้าถึง '+n.arr.name+'['+ix+'] เกินขอบเขต อาร์เรย์มี '+cell2.arr.length+' ช่อง คือ index 0 ถึง '+(cell2.arr.length-1)};
+    return {get:function(){ return cell2.arr[ix]; }, set:function(x){ cell2.arr[ix]=self.conv(cell2.type,x); }, type:cell2.type};
+  }
+  throw {line:0,msg:'ฝั่งซ้ายของเครื่องหมาย = ต้องเป็นตัวแปรหรือสมาชิกอาร์เรย์'};
+};
+Interp.prototype.eval=function(n,env){
+  if(++this.steps>this.maxSteps) throw {line:n.line||0,msg:'ทำงานเกินขีดจำกัด น่าจะเป็น Infinite Loop'};
+  var self=this;
+  switch(n.kind){
+    case 'num': return n.isInt? i32(n.v) : (n.isF? f32(n.v) : n.v);
+    case 'str': return n.v;
+    case 'var': {
+      var sc=this.lookup(env,n.name,n.line), cell=sc[n.name];
+      if(cell.arr) return {arr:cell.arr,type:cell.type};
+      return cell.v;
+    }
+    case 'index': return this.lvalue(n,env).get();
+    case 'assign': {
+      var lv=this.lvalue(n.target,env), r=this.eval(n.value,env), nv;
+      if(n.op==='=') nv=r;
+      else{
+        var cur=lv.get();
+        if(n.op==='+=') nv=cur+r; else if(n.op==='-=') nv=cur-r;
+        else if(n.op==='*=') nv=cur*r;
+        else if(n.op==='/=') nv=this.divide(cur,r,lv.type);
+        else nv=this.mod(cur,r);
+      }
+      if(lv.type==='int'||lv.type==='char'){
+        if(n.op==='='||n.op==='+='||n.op==='-='||n.op==='*='){ /* truncate on store */ }
+      }
+      lv.set(nv); return lv.get();
+    }
+    case 'pre': { var lv2=this.lvalue(n.e,env); lv2.set(lv2.get()+(n.op==='++'?1:-1)); return lv2.get(); }
+    case 'post': { var lv3=this.lvalue(n.e,env), old=lv3.get(); lv3.set(old+(n.op==='++'?1:-1)); return old; }
+    case 'neg': return -this.eval(n.e,env);
+    case 'not': return this.truthy(this.eval(n.e,env))?0:1;
+    case 'cast': { var cv=this.eval(n.e,env); return this.conv(n.to,cv); }
+    case 'cond': return this.truthy(this.eval(n.cond,env))? this.eval(n.a,env) : this.eval(n.b,env);
+    case 'bin': {
+      var op=n.op;
+      if(op==='&&') return (this.truthy(this.eval(n.l,env)) && this.truthy(this.eval(n.r,env)))?1:0;
+      if(op==='||') return (this.truthy(this.eval(n.l,env)) || this.truthy(this.eval(n.r,env)))?1:0;
+      var a=this.eval(n.l,env), b=this.eval(n.r,env);
+      var bothInt=Number.isInteger(a)&&Number.isInteger(b)&&this.isIntExpr(n.l,env)&&this.isIntExpr(n.r,env);
+      switch(op){
+        case '+': return bothInt? i32(a+b) : a+b;
+        case '-': return bothInt? i32(a-b) : a-b;
+        case '*': return bothInt? i32(a*b) : a*b;
+        case '/': return this.divide(a,b,bothInt?'int':'float');
+        case '%': return this.mod(a,b);
+        case '<': return a<b?1:0;  case '<=': return a<=b?1:0;
+        case '>': return a>b?1:0;  case '>=': return a>=b?1:0;
+        case '==': return a===b?1:0; case '!=': return a!==b?1:0;
+        case '&': return i32(a)&i32(b); case '|': return i32(a)|i32(b);
+      }
+      throw {line:0,msg:'ตัวดำเนินการ '+op+' ยังไม่รองรับ'};
+    }
+    case 'call': {
+      if(n.name==='printf'||n.name==='fprintf'){
+        var args=n.args.map(function(x){ return self.eval(x,env); });
+        if(n.name==='fprintf') args.shift();
+        var f=args.shift();
+        this.write(doPrintf(String(f),args)); return 0;
+      }
+      if(n.name==='puts'){ this.write(String(this.eval(n.args[0],env))+'\n'); return 0; }
+      if(n.name==='putchar'){ this.write(String.fromCharCode(Math.trunc(this.eval(n.args[0],env)))); return 0; }
+      if(n.name==='abs'||n.name==='fabs') return Math.abs(this.eval(n.args[0],env));
+      if(n.name==='sqrt') return Math.sqrt(this.eval(n.args[0],env));
+      if(n.name==='pow') return Math.pow(this.eval(n.args[0],env),this.eval(n.args[1],env));
+      if(n.name==='scanf'||n.name==='getchar')
+        throw {line:n.line,msg:'แดชบอร์ดนี้ไม่รองรับ scanf ให้รับค่าจากแผงควบคุมด้านซ้ายแทน'};
+      var fn=this.funcs[n.name];
+      if(!fn) throw {line:n.line,msg:'ไม่รู้จักฟังก์ชันชื่อ '+n.name};
+      var av=n.args.map(function(x){ return self.eval(x,env); });
+      return this.callFunc(fn,av);
+    }
+  }
+  throw {line:n.line||0,msg:'นิพจน์ชนิด '+n.kind+' ยังไม่รองรับ'};
+};
+Interp.prototype.isIntExpr=function(n,env){
+  switch(n.kind){
+    case 'num': return !!n.isInt;
+    case 'var': { try{ var sc=this.lookup(env,n.name,n.line); var c=sc[n.name];
+        return c.type==='int'||c.type==='char'; }catch(e){ return false; } }
+    case 'index': { try{ var sc2=this.lookup(env,n.arr.name,n.arr.line); var c2=sc2[n.arr.name];
+        return c2.type==='int'||c2.type==='char'; }catch(e){ return false; } }
+    case 'cast': return n.to==='int'||n.to==='char';
+    case 'neg': return this.isIntExpr(n.e,env);
+    case 'pre': case 'post': return this.isIntExpr(n.e,env);
+    case 'bin':
+      if(['<','<=','>','>=','==','!=','&&','||','%'].indexOf(n.op)>=0) return true;
+      return this.isIntExpr(n.l,env)&&this.isIntExpr(n.r,env);
+    case 'call': { var f=this.funcs[n.name]; return !!f&&(f.type==='int'||f.type==='char'); }
+    case 'assign': return this.isIntExpr(n.target,env);
+    case 'cond': return this.isIntExpr(n.a,env)&&this.isIntExpr(n.b,env);
+    case 'not': return true;
+  }
+  return false;
+};
+Interp.prototype.divide=function(a,b,type){
+  if(b===0) throw {line:0,msg:'หารด้วยศูนย์'};
+  var r=a/b;
+  return (type==='int'||type==='char')? i32(trunc(r)) : r;
+};
+Interp.prototype.mod=function(a,b){
+  if(b===0) throw {line:0,msg:'มอดูโลด้วยศูนย์'};
+  return i32(trunc(a)) % i32(trunc(b));   /* JS % ตัดเข้าหาศูนย์ เหมือน C99 */
+};
+
+function runC(src,opts){
+  opts=opts||{};
+  var ast;
+  try{ ast=parse(lex(src)); }
+  catch(e){ return {ok:false, line:e.line||0, msg:e.msg||String(e), phase:'แปลโปรแกรม'}; }
+  var it=new Interp(ast,opts);
+  try{ var out=it.run(); return {ok:true, out:out, injected:it.injected}; }
+  catch(e){
+    if(e&&e.ret!==undefined) return {ok:true,out:it.out,injected:it.injected};
+    return {ok:false, line:(e&&e.line)||0, msg:(e&&e.msg)||String(e), phase:'ตอนทำงาน', out:it.out};
+  }
+}
+root.MiniC={run:runC, printf:doPrintf};
+})(typeof module!=='undefined'?module.exports:(window.MiniCNS=window.MiniCNS||window));
+
+// C-semantics helpers
 const idiv = (a,b) => Math.trunc(a/b);
 const imod = (a,b) => a % b;          // JS % truncates toward zero, same as C99
 const f32  = x => Math.fround(x);
@@ -179,6 +723,8 @@ const G5 = left => {
 };
 
 
+var REF_SRC="#include <stdio.h>\n\n/* GNR1007 | \u0e01\u0e25\u0e38\u0e48\u0e21\u0e17\u0e35\u0e48 5 : \u0e19\u0e32\u0e2c\u0e34\u0e01\u0e32\u0e1b\u0e25\u0e38\u0e01\u0e42\u0e04\u0e23\u0e07\u0e01\u0e32\u0e23 (Deadline Tracker) */\n\nint level(int days)                   /* \u0e1a\u0e17\u0e17\u0e35\u0e48 6 : \u0e1f\u0e31\u0e07\u0e01\u0e4c\u0e0a\u0e31\u0e19 \u0e08\u0e31\u0e14\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e40\u0e23\u0e48\u0e07\u0e14\u0e48\u0e27\u0e19 */\n{\n    if (days < 0)       return 3;     /* \u0e40\u0e25\u0e22\u0e01\u0e33\u0e2b\u0e19\u0e14 */\n    else if (days <= 7) return 2;     /* \u0e27\u0e34\u0e01\u0e24\u0e15 */\n    else if (days <= 30) return 1;    /* \u0e40\u0e1d\u0e49\u0e32\u0e23\u0e30\u0e27\u0e31\u0e07 */\n    else                 return 0;    /* \u0e1b\u0e01\u0e15\u0e34 */\n}\n\nint main(void)\n{\n    int left[7] = {45, 12, 3, -5, 30, 60, 7};\n    int i, lv, w, d;\n    int nRed = 0, nOrange = 0, nYellow = 0, nGreen = 0;\n\n    printf(\"=== \u0e01\u0e23\u0e30\u0e14\u0e32\u0e19\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e2a\u0e48\u0e07\u0e07\u0e32\u0e19\u0e42\u0e04\u0e23\u0e07\u0e01\u0e32\u0e23 ===\\n\");\n    printf(\"\u0e2a\u0e31\u0e0d\u0e0d\u0e32\u0e17\u0e35\u0e48  \u0e27\u0e31\u0e19\u0e04\u0e07\u0e40\u0e2b\u0e25\u0e37\u0e2d  \u0e41\u0e1b\u0e25\u0e07\u0e40\u0e1b\u0e47\u0e19          \u0e2a\u0e16\u0e32\u0e19\u0e30\\n\");\n\n    for (i = 0; i < 7; i++) {\n        lv = level(left[i]);\n        w  = left[i] / 7;             /* \u0e1a\u0e17\u0e17\u0e35\u0e48 4 : int/int \u0e15\u0e31\u0e14\u0e40\u0e28\u0e29 */\n        d  = left[i] % 7;             /* \u0e1a\u0e17\u0e17\u0e35\u0e48 4 : % \u0e40\u0e2d\u0e32\u0e40\u0e28\u0e29 */\n\n        printf(\"   %d       %4d      %2d \u0e2a\u0e31\u0e1b\u0e14\u0e32\u0e2b\u0e4c %2d \u0e27\u0e31\u0e19   \", i + 1, left[i], w, d);\n\n        if (lv == 3)      { printf(\"\u0e40\u0e25\u0e22\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e41\u0e25\u0e49\u0e27\\n\");   nRed++; }\n        else if (lv == 2) { printf(\"\u0e27\u0e34\u0e01\u0e24\u0e15 \u0e40\u0e23\u0e48\u0e07\u0e14\u0e48\u0e27\u0e19\\n\");  nOrange++; }\n        else if (lv == 1) { printf(\"\u0e40\u0e1d\u0e49\u0e32\u0e23\u0e30\u0e27\u0e31\u0e07\\n\");       nYellow++; }\n        else              { printf(\"\u0e1b\u0e01\u0e15\u0e34\\n\");            nGreen++; }\n    }\n\n    printf(\"--------------------------------------------------\\n\");\n    printf(\"\u0e40\u0e25\u0e22\u0e01\u0e33\u0e2b\u0e19\u0e14 %d | \u0e27\u0e34\u0e01\u0e24\u0e15 %d | \u0e40\u0e1d\u0e49\u0e32\u0e23\u0e30\u0e27\u0e31\u0e07 %d | \u0e1b\u0e01\u0e15\u0e34 %d\\n\",\n           nRed, nOrange, nYellow, nGreen);\n\n    if (nRed > 0)\n        printf(\"\u0e04\u0e33\u0e2a\u0e31\u0e48\u0e07 : \u0e40\u0e23\u0e35\u0e22\u0e01\u0e1b\u0e23\u0e30\u0e0a\u0e38\u0e21\u0e14\u0e48\u0e27\u0e19\u0e20\u0e32\u0e22\u0e43\u0e19\u0e2a\u0e31\u0e1b\u0e14\u0e32\u0e2b\u0e4c\u0e19\u0e35\u0e49\\n\");\n    else if (nOrange > 0)\n        printf(\"\u0e04\u0e33\u0e2a\u0e31\u0e48\u0e07 : \u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e23\u0e32\u0e22\u0e27\u0e31\u0e19\u0e08\u0e19\u0e01\u0e27\u0e48\u0e32\u0e08\u0e30\u0e2a\u0e48\u0e07\u0e21\u0e2d\u0e1a\\n\");\n    else\n        printf(\"\u0e04\u0e33\u0e2a\u0e31\u0e48\u0e07 : \u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e15\u0e32\u0e21\u0e23\u0e2d\u0e1a\u0e1b\u0e01\u0e15\u0e34\\n\");\n\n    return 0;\n}\n";
+var INJECT_NAME="left[7]";
 
 function readIn(){let a=[];for(let i=0;i<7;i++)a.push(parseInt(document.getElementById('c'+i).value));return a;}
 function runSim(){setLed(true);
@@ -202,8 +748,47 @@ function runSim(){setLed(true);
  document.getElementById('out').textContent=o;}
 function resetSim(){const d=[45,12,3,-5,30,60,7];for(let i=0;i<7;i++){document.getElementById('c'+i).value=d[i];
  document.getElementById('v'+i).textContent=d[i];}runSim();}
-resetSim(); stopSim();
+
+function currentInject(){ return collectInject(); }
+function runSource(src){ return MiniC.run(src, {inject: currentInject()}); }
+function showOut(t){ document.getElementById('out').textContent=t; }
+function verdict(cls,msg,extra){
+  var v=document.getElementById('verdict');
+  v.className='verdict '+cls;
+  v.innerHTML=msg+(extra?('<div class="diff">'+extra+'</div>'):'');
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function compileRun(){
+  setLed(true);
+  var src=document.getElementById('src').value;
+  var mine=runSource(src);
+  if(!mine.ok){
+    showOut((mine.out||'')+'\n>>> ผิดพลาดตอน'+mine.phase+(mine.line?(' บรรทัดที่ '+mine.line):'')+': '+mine.msg);
+    verdict('v-err','คอมไพล์หรือรันไม่ผ่าน'+(mine.line?(' — บรรทัดที่ '+mine.line):''), esc(mine.msg));
+    setLed(false); return;
+  }
+  showOut(mine.out);
+  var ref=MiniC.run(REF_SRC,{inject:currentInject()});
+  var a=mine.out.replace(/\s+$/,'').split('\n'), b=ref.out.replace(/\s+$/,'').split('\n');
+  var bad=-1;
+  for(var i=0;i<Math.max(a.length,b.length);i++){ if(a[i]!==b[i]){ bad=i; break; } }
+  if(bad<0) verdict('v-ok','ผลลัพธ์ตรงกับเฉลยทุกบรรทัด ('+a.length+' บรรทัด) — ผ่านสำหรับชุดข้อมูลนี้');
+  else verdict('v-no','ผลลัพธ์ต่างจากเฉลยที่บรรทัดที่ '+(bad+1),
+    'โค้ดของคุณ : '+esc(a[bad]===undefined?'(ไม่มีบรรทัดนี้)':a[bad])+'\nเฉลย       : '+esc(b[bad]===undefined?'(ไม่มีบรรทัดนี้)':b[bad]));
+  if(mine.injected&&mine.injected.length===0)
+    verdict(bad<0?'v-ok':'v-no', document.getElementById('verdict').textContent+
+      ' | หมายเหตุ ไม่พบตัวแปร '+INJECT_NAME+' ในโค้ด จึงรันด้วยค่าที่เขียนไว้เอง');
+}
+function restoreCode(){ document.getElementById('src').value=REF_SRC; compileRun(); }
+function collectInject(){ return {left: readIn()}; }
+document.getElementById('src').value = REF_SRC;
+document.getElementById('injname').textContent = INJECT_NAME;
+resetSim();
+compileRun();
+stopSim();
+
 function setLed(on){document.getElementById('led').className='led'+(on?' on':'');
 document.getElementById('status').textContent=on?'RUNNING':'STOPPED';}
 function stopSim(){setLed(false);}
+function runAll(){ runSim(); compileRun(); }
 </script></body></html>
